@@ -427,6 +427,9 @@ public class HighsLpSolver : IDisposable
     private static extern int Highs_changeRowsBoundsByMask(IntPtr highs, int[] mask, double[] lower, double[] upper);
 
     [DllImport(highslibname)]
+    private static extern int Highs_changeColIntegrality(IntPtr highs, int col, HighsIntegrality integrality);
+
+    [DllImport(highslibname)]
     private static extern int Highs_changeColsIntegralityByRange(IntPtr highs, int from_col, int to_col, int[] integrality);
 
     [DllImport(highslibname)]
@@ -449,6 +452,9 @@ public class HighsLpSolver : IDisposable
 
     [DllImport(highslibname)]
     private static extern int Highs_deleteRowsByMask(IntPtr highs, int[] mask);
+
+    [DllImport(highslibname)]
+    private static extern HighsStatus Highs_getColIntegrality(IntPtr highs, int col, out HighsIntegrality integrality);
 
     [DllImport(highslibname)]
     private static extern int Highs_getDoubleInfoValue(IntPtr highs, string info, out double value);
@@ -938,9 +944,27 @@ public class HighsLpSolver : IDisposable
         return (HighsStatus)HighsLpSolver.Highs_changeRowsBoundsByMask(this.highs, mask.Select(x => x ? 1 : 0).ToArray(), lower, upper);
     }
 
+    /// <summary>Change the integrality (variable type) of a column (variable)</summary>
+    /// <param name="col">The index of the column to change</param>
+    /// <param name="integrality">The new integrality type of the column</param>
+    /// <returns>Returns a <see cref="HighsStatus"/> constant indicating whether the call succeeded</returns>
+    public HighsStatus changeColIntegrality(int col, HighsIntegrality integrality)
+    {
+        return (HighsStatus)HighsLpSolver.Highs_changeColIntegrality(this.highs, col, integrality);
+    }
+
     public HighsStatus changeColsIntegralityByRange(int from_col, int to_col, HighsIntegrality[] integrality)
     {
         return (HighsStatus)HighsLpSolver.Highs_changeColsIntegralityByRange(this.highs, from_col, to_col, Array.ConvertAll(integrality, item => (int)item));
+    }
+
+    /// <summary>Get the integrality (variable type) of a column (variable)</summary>
+    /// <param name="col">The index of the column to query</param>
+    /// <param name="integrality">A variable where the column's integrality should be stored.</param>
+    /// <returns>Returns a <see cref="HighsStatus"/> constant indicating whether the call succeeded</returns>
+    public HighsStatus getColIntegrality(int col, out HighsIntegrality integrality)
+    {
+        return HighsLpSolver.Highs_getColIntegrality(this.highs, col, out integrality);
     }
 
     public HighsStatus changeCoeff(int row, int col, double value)
