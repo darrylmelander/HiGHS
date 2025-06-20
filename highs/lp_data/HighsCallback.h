@@ -89,7 +89,6 @@ struct HighsCallback {
 
   // Function pointers cannot be used for Pybind11, so use std::function
   HighsCallbackFunctionType user_callback = nullptr;
-  HighsCCallbackType c_callback = nullptr;
   void* user_callback_data = nullptr;
   Highs* highs = nullptr;
   std::vector<bool> active;
