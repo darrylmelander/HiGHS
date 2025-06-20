@@ -211,7 +211,7 @@ public class HighsLpSolver : IDisposable
 
     /// <summary>Signature of a function that is called by HiGHS when callback events occur</summary>
     private delegate void CallbackDelegate(
-        HighsCallbackType cbType, IntPtr messagePtr, [In] HighsCallbackDataOut cbDataOut,
+        HighsCallbackType cbType, IntPtr messagePtr, [In] ref HighsCallbackDataOut cbDataOut,
         ref HighsCallbackDataIn cbDataIn, IntPtr cbUserData);
     /// <summary>Pointer to function that is called when HiGHS callbacks occur</summary>
     private CallbackDelegate _cbDelegate;
@@ -1178,7 +1178,7 @@ public class HighsLpSolver : IDisposable
         return (HighsStatus)Highs_stopCallback(this.highs, cbType);
     }
 
-    private void callbackFunction(HighsCallbackType cbType, IntPtr messagePtr, [In] HighsCallbackDataOut cbDataOut, ref HighsCallbackDataIn cbDataIn, IntPtr cbUserData)
+    private void callbackFunction(HighsCallbackType cbType, IntPtr messagePtr, [In] ref HighsCallbackDataOut cbDataOut, [In, Out] ref HighsCallbackDataIn cbDataIn, IntPtr cbUserData)
     {
         switch (cbType)
         {
@@ -1296,6 +1296,7 @@ public class HighsLpSolver : IDisposable
 [StructLayout(LayoutKind.Sequential)]
 internal struct HighsCallbackDataOut
 {
+    private IntPtr _ignore;
     public HighsLogType log_type;
     public double running_time;
     public int simplex_iteration_count;
