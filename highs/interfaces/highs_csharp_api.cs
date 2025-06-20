@@ -209,12 +209,17 @@ public class HighsLpSolver : IDisposable
 
     private const string highslibname = "highs";
 
-    /// <summary>Signature of a function that is called by HiGHS when callback events occur</summary>
+    /// <summary>Signature of functions that can be called by HiGHS when callback events occur</summary>
     private delegate void CallbackDelegate(
         HighsCallbackType cbType, IntPtr messagePtr, [In] ref HighsCallbackDataOut cbDataOut,
         ref HighsCallbackDataIn cbDataIn, IntPtr cbUserData);
+
     /// <summary>Pointer to function that is called when HiGHS callbacks occur</summary>
     private CallbackDelegate _cbDelegate;
+
+    /// <summary>C Function pointer to event-generating callback delegate</summary>
+    /// <remarks>Primary purpose it to improve ability to test events</remarks>
+    protected IntPtr CallbackFunctionPtr => Marshal.GetFunctionPointerForDelegate(_cbDelegate);
 
     [DllImport(highslibname)]
     private static extern int Highs_call(
