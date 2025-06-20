@@ -593,6 +593,8 @@ public class HighsLpSolver : IDisposable
     [DllImport(highslibname)]
     private static extern int Highs_writeOptionsDeviations(IntPtr highs, string filename);
 
+    protected IntPtr HighsObject => this.highs;
+
     public static HighsStatus call(HighsModel model, ref HighsSolution sol, ref HighsBasis bas, ref HighsModelStatus modelstatus)
     {
         int nc = model.colcost.Length;
