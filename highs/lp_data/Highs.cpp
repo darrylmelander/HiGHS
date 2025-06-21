@@ -2322,8 +2322,7 @@ HighsStatus Highs::setCallback(HighsCallbackFunctionType user_callback,
 
 HighsStatus Highs::setCallback(HighsCCallbackType c_callback,
                                void* user_callback_data) {
-  this->callback_.clear();
-  this->callback_.user_callback = [c_callback](
+  HighsCallbackFunctionType user_callback = [c_callback](
                                       int a, const std::string& b,
                                       const HighsCallbackOutput* cb_out,
                                       HighsCallbackInput* cb_in, void* e) {
@@ -2332,12 +2331,7 @@ HighsStatus Highs::setCallback(HighsCCallbackType c_callback,
     c_callback(a, b.c_str(), &cc_out, &cc_in, e);
     *cb_in = cc_in;  // copy the data in
   };
-  this->callback_.user_callback_data = user_callback_data;
-
-  options_.log_options.user_callback = this->callback_.user_callback;
-  options_.log_options.user_callback_data = this->callback_.user_callback_data;
-  options_.log_options.user_callback_active = false;
-  return HighsStatus::kOk;
+  return this->setCallback(user_callback, user_callback_data);
 }
 
 HighsStatus Highs::startCallback(const int callback_type) {
@@ -2359,21 +2353,7 @@ HighsStatus Highs::startCallback(const int callback_type) {
 }
 
 HighsStatus Highs::startCallback(const HighsCallbackType callback_type) {
-  const bool callback_type_ok =
-      callback_type >= kCallbackMin && callback_type <= kCallbackMax;
-  assert(callback_type_ok);
-  if (!callback_type_ok) return HighsStatus::kError;
-  if (!this->callback_.user_callback) {
-    highsLogUser(options_.log_options, HighsLogType::kError,
-                 "Cannot start callback when user_callback not defined\n");
-    return HighsStatus::kError;
-  }
-  assert(int(this->callback_.active.size()) == kNumCallbackType);
-  this->callback_.active[callback_type] = true;
-  // Possibly modify the logging callback activity
-  if (callback_type == kCallbackLogging)
-    options_.log_options.user_callback_active = true;
-  return HighsStatus::kOk;
+  return this->startCallback((int)callback_type);
 }
 
 HighsStatus Highs::stopCallback(const int callback_type) {
@@ -2395,21 +2375,7 @@ HighsStatus Highs::stopCallback(const int callback_type) {
 }
 
 HighsStatus Highs::stopCallback(const HighsCallbackType callback_type) {
-  const bool callback_type_ok =
-      callback_type >= kCallbackMin && callback_type <= kCallbackMax;
-  assert(callback_type_ok);
-  if (!callback_type_ok) return HighsStatus::kError;
-  if (!this->callback_.user_callback) {
-    highsLogUser(options_.log_options, HighsLogType::kWarning,
-                 "Cannot stop callback when user_callback not defined\n");
-    return HighsStatus::kWarning;
-  }
-  assert(int(this->callback_.active.size()) == kNumCallbackType);
-  this->callback_.active[callback_type] = false;
-  // Possibly modify the logging callback activity
-  if (callback_type == kCallbackLogging)
-    options_.log_options.user_callback_active = false;
-  return HighsStatus::kOk;
+  return this->stopCallback((int)callback_type);
 }
 
 HighsStatus Highs::setBasis(const HighsBasis& basis,
