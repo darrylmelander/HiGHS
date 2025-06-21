@@ -2512,6 +2512,12 @@ HighsInt Highs_setOptionValue(void* highs, const char* option,
 
 HighsInt Highs_getScaledModelStatus(const void* highs);
 
+HighsInt TriggerCallbacks(HighsCCallbackType user_callback,
+                          const HighsInt callback_type,
+                          const HighsInt callback_count,
+                          const char** messages,
+                          const double* obj_fn_values);
+
 #ifdef __cplusplus
 }
 #endif

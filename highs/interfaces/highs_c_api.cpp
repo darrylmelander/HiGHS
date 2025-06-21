@@ -1703,3 +1703,39 @@ double Highs_getHighsInfinity(const void* highs) {
 HighsInt Highs_getScaledModelStatus(const void* highs) {
   return (HighsInt)((Highs*)highs)->getModelStatus();
 }
+
+HighsInt TriggerCallbacks(HighsCCallbackType c_callback,
+                          const HighsInt callback_type,
+                          const HighsInt callback_count,
+                          const char** messages,
+                          const double* obj_fn_values)
+{
+  HighsCallback cbData(nullptr);
+  cbData.clear();
+  cbData.user_callback = [c_callback](
+      int a, const std::string& b,
+      const HighsCallbackOutput* cb_out,
+      HighsCallbackInput* cb_in, void* e) {
+        HighsCallbackDataOut cc_out = static_cast<HighsCallbackDataOut>(*cb_out);
+        HighsCallbackDataIn cc_in = static_cast<HighsCallbackDataIn>(*cb_in);
+        c_callback(a, b.c_str(), &cc_out, &cc_in, e);
+        *cb_in = cc_in;  // copy the data in
+    };
+  cbData.user_callback_data = nullptr;
+  cbData.active[callback_type] = true;
+
+  int interrupt_count = 0;
+  for (int i = 0; i < callback_count; i++)
+  {
+    if (obj_fn_values)
+        cbData.data_out.objective_function_value = obj_fn_values[i];
+    string msg = messages ? messages[i] : "";
+    printf("About to call callback\n");
+    bool interrupt = cbData.callbackAction(callback_type, msg);
+    if (interrupt)
+        interrupt_count++;
+    printf("Done calling callback\n");
+  }
+
+  return interrupt_count;
+}

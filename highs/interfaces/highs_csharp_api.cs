@@ -1331,6 +1331,40 @@ public class HighsLpSolver : IDisposable
         }
     }
 #endregion
+
+#region "Event Testing Support"
+    [DllImport(highslibname)]
+    private static extern int TriggerCallbacks(
+        IntPtr cbFuncPtr,
+        HighsCallbackType callback_type,
+        int callback_count,
+        string[] messages,
+        double[] obj_fn_values
+    );
+
+    protected int TriggerEventsForTesting()
+    {
+        int interruptCount = TriggerCallbacks(
+            this.CallbackFunctionPtr,
+            HighsCallbackType.kCallbackLogging, 2,
+            new string[] { "Message 1", "Msg2" },
+            new double[] { 1.1, 3.3 });
+
+        interruptCount += TriggerCallbacks(
+            this.CallbackFunctionPtr,
+            HighsCallbackType.kCallbackMipImprovingSolution, 3,
+            new string[] { "Message 1", "Msg2", "M3" },
+            new double[] { 1.1, 3.3, 2.2 });
+
+        interruptCount += TriggerCallbacks(
+            this.CallbackFunctionPtr,
+            HighsCallbackType.kCallbackMipInterrupt, 2,
+            new string[] { "Message 1", "Msg2", "M3" },
+            new double[] { 1.1, 3.3, 2.2 });
+
+        return interruptCount;
+    }
+#endregion
 }
 
     /// <summary>Data passed to the callback function from HiGHS</summary>
